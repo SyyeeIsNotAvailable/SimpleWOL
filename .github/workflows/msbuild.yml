@@ -38,4 +38,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: SimpleWOL-exe
-        path: SimpleWOL/bin/x64/${{env.BUILD_CONFIGURATION}}/SimpleWOL.exe
+        path: SimpleWOL/x64/${{env.BUILD_CONFIGURATION}}/SimpleWOL.exe
