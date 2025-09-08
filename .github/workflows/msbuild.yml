@@ -18,24 +18,37 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Restore NuGet packages
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+      
+      - name: Restore NuGet packages
+        run: nuget restore ${{ env.SOLUTION_FILE_PATH }}
 
-    - name: Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x64 ${{env.SOLUTION_FILE_PATH}}
+      - name: Build (Release)
+        run: msbuild /m /t:Build /p:Configuration=${{ env.BUILD_CONFIGURATION }} ${{ env.SOLUTION_FILE_PATH }}
 
-    - name: List build output (debug)
-      run: Get-ChildItem -Recurse SimpleWOL
+      - name: List outputs (debug)
+        shell: pwsh
+        run: |
+          Write-Host "Workspace:" $env:GITHUB_WORKSPACE
+          Get-ChildItem -Recurse -File | Select-Object FullName, Length | Out-String -Width 500
 
-    - name: Upload exe artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: SimpleWOL-exe
-        path: SimpleWOL/x64/${{env.BUILD_CONFIGURATION}}/SimpleWOL.exe
+      - name: Locate built EXE
+        id: locate
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path . -Recurse -File -Include *.exe `
+                 | Where-Object { $_.FullName -notmatch '\\Windows\\' } `
+                 | Select-Object -First 1
+          if (-not $exe) { Write-Error "No .exe produced"; exit 1 }
+          "EXE_PATH=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Found EXE at: $($exe.FullName)"
+
+      - name: Upload exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimpleWOL-exe
+          path: ${{ env.EXE_PATH }}
