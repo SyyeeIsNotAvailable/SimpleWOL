@@ -29,7 +29,7 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x64 ${{env.SOLUTION_FILE_PATH}}
 
     - name: List build output (debug)
       run: Get-ChildItem -Recurse SimpleWOL
@@ -38,4 +38,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: SimpleWOL-exe
-        path: SimpleWOL/bin/${{env.BUILD_CONFIGURATION}}/SimpleWOL.exe
+        path: SimpleWOL/bin/x64/${{env.BUILD_CONFIGURATION}}/SimpleWOL.exe
